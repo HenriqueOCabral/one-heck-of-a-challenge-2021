@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Outputs:
+  DistributionId:
+    Value: !Ref 'myDistribution'
+  DistributionName:
+    Value: !Join
+      - ''
+      - - http://
+        - !GetAtt 'myDistribution.DomainName'
+Resources:
+  BucketContent:
+    Properties:
+      AccessControl: PublicRead
+      BucketName: dashboard-web
+      WebsiteConfiguration:
+        ErrorDocument: index.html
+        IndexDocument: index.html
+    Type: AWS::S3::Bucket
+  BucketContentPolicy:
+    Properties:
+      Bucket: !Ref 'BucketContent'
+      PolicyDocument:
+        Statement:
+          - Action: s3:GetObject
+            Effect: Allow
+            Principal: '*'
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref 'BucketContent'
+                - /*
+            Sid: AllowFromCloudFront
+    Type: AWS::S3::BucketPolicy
+  myDistribution:
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - deprecated.poc.com
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: '10'
+            ErrorCode: '404'
+            ResponseCode: '200'
+            ResponsePagePath: /index.html
+        DefaultCacheBehavior:
+          ForwardedValues:
+            QueryString: 'false'
+          TargetOriginId: Origin 1
+          ViewerProtocolPolicy: allow-all
+        Enabled: 'true'
+        HttpVersion: http2
+        Origins:
+          - DomainName: !GetAtt 'BucketContent.RegionalDomainName'
+            Id: Origin 1
+            S3OriginConfig: {}
+        ViewerCertificate:
+          AcmCertificateArn: 
+          SslSupportMethod: sni-only
+    Type: AWS::CloudFront::Distribution
+

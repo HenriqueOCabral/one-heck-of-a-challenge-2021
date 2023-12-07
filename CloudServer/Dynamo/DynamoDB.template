@@ -1,0 +1,67 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Parameters" : {
+    "HashKeyElementName" : {
+      "Description" : "HashType PrimaryKey Name",
+      "Type" : "String",
+      "AllowedPattern" : "[a-zA-Z0-9_-]*",
+      "MinLength": "1",
+      "MaxLength": "2048",
+      "ConstraintDescription" : "must contain only alphanumberic characters or (_-)"
+    },
+
+    "HashKeyElementType" : {
+      "Description" : "HashType PrimaryKey Type",
+      "Type" : "String",
+      "Default" : "S",
+      "AllowedPattern" : "[S|N]",
+      "MinLength": "1",
+      "MaxLength": "1",
+      "ConstraintDescription" : "must be either S or N"
+    },
+
+    "ReadCapacityUnits" : {
+      "Description" : "Provisioned read throughput",
+      "Type" : "Number",
+      "Default" : "5",
+      "MinValue": "5",
+      "MaxValue": "10000",
+      "ConstraintDescription" : "must be between 5 and 10000"
+    },
+
+    "WriteCapacityUnits" : {
+      "Description" : "Provisioned write throughput",
+      "Type" : "Number",
+      "Default" : "10",
+      "MinValue": "5",
+      "MaxValue": "10000",
+      "ConstraintDescription" : "must be between 5 and 10000"
+    }
+  },
+ 
+  "Resources" : {
+    "sdkVideoLabels" : {
+      "Type" : "AWS::DynamoDB::Table",
+      "Properties" : {
+        "AttributeDefinitions": [ { 
+          "AttributeName" : "video_id",
+          "AttributeType" : "S"
+        } ],
+        "KeySchema": [
+          { "AttributeName": "video_id", "KeyType": "HASH" }
+        ],
+        "ProvisionedThroughput" : {
+          "ReadCapacityUnits" : {"Ref" : "ReadCapacityUnits"},
+          "WriteCapacityUnits" : {"Ref" : "WriteCapacityUnits"}
+        }                
+      }
+    }
+  },
+ 
+  "Outputs" : {
+    "TableName" : {
+      "Value" : {"Ref" : "sdkVideoLabels"},
+      "Description" : "Results of Rekognition scan of sdk videos"
+    }
+  }
+}
